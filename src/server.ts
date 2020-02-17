@@ -8,8 +8,9 @@ import {buildSchema} from 'graphql';
 let mongoose = require('mongoose');
 
 
-mongoose.connect('mongodb+srv://wkylin:wkylin@cluster0-wguhd.gcp.mongodb.net/graphql',
-  {useUnifiedTopology: true, useNewUrlParser: true });
+mongoose.connect('mongodb+srv://wkylin:wkylin@cluster0-wguhd.gcp.mongodb.net/graphql', {useUnifiedTopology: true, useNewUrlParser: true }).then((db: any) => {
+      // console.log('db', db);
+    });
 // mongoose.connect('mongodb://localhost:27017/graphql', {useUnifiedTopology: true, useNewUrlParser: true });
 
 
