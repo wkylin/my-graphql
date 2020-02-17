@@ -5,8 +5,22 @@
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import {buildSchema} from 'graphql';
+let mongoose = require('mongoose');
+
+
+mongoose.connect('mongodb+srv://wkylin:wkylin@cluster0-wguhd.gcp.mongodb.net/graphql',
+  {useUnifiedTopology: true, useNewUrlParser: true });
+// mongoose.connect('mongodb://localhost:27017/graphql', {useUnifiedTopology: true, useNewUrlParser: true });
+
 
 const app = express();
+
+let userSchema = new mongoose.Schema({
+  name: String,
+  sex: String
+});
+
+let UserModel = mongoose.model("User", userSchema)
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -16,15 +30,20 @@ const schema = buildSchema(`
     roll(numRolls: Int!): [Int]
   }
 
+  type User {
+    name: String
+    sex: String
+  }
   type Query {
     getDie(numSides: Int): RandomDie
     ip: String
+    findUser: [User]
   }
 `);
 
 // This class implements the RandomDie GraphQL type
 class RandomDie {
-  numSides: number
+  numSides: number;
   constructor(numSides:number) {
     this.numSides = numSides;
   }
@@ -43,6 +62,12 @@ class RandomDie {
   }
 }
 
+// interface Users {
+//   id:string
+//   name:string
+//   sex: string
+// }
+
 // The root provides the top-level API endpoints
 
 const root = {
@@ -50,8 +75,12 @@ const root = {
   getDie: ({numSides}):RandomDie => {
     return new RandomDie(numSides || 6);
   },
-  ip: function (args:any, request:any): string {
+  ip: (args:any, request:any): String => {
     return request.ip;
+  },
+  findUser: async function(args:any) {
+    const user = await UserModel.find();
+    return user;
   }
 };
 
@@ -67,5 +96,11 @@ app.use('/graphql', graphqlHTTP({
   rootValue: root,
   graphiql: true,
 }));
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+
+console.log('we\'re connected!');
+app.listen(4000, () => {
+  console.log('Running a GraphQL API server at localhost:4000/graphql');
+});
+
+
+
